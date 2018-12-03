@@ -19,6 +19,7 @@ fn main() {
 fn run_day(day: &String, args: &[String]) {
     match day.as_ref() {
         "1.1" => day_01::run_part_1(args),
+        "1.2" => day_01::run_part_2(args),
         _ => println!("Day not found: {}", day)
     };
 }

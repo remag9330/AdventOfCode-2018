@@ -13,16 +13,36 @@ pub fn run_part_1(args: &[String]) {
     };
 }
 
+pub fn run_part_2(args: &[String]) {
+    match args {
+        [filename] => {
+            if let Err(e) = calculate_repeat_frequency(filename) {
+                println!("Day 1 Failed: {}", e);
+            }
+        },
+        _ => println!("Please supply a filename as an argument to day 1")
+    };
+}
+
+fn calculate_repeat_frequency(input_filename: &String) -> Result<(), io::Error> {
+    let input = read_file_input(input_filename)?;
+    let result = calculate_repeat(&input);
+
+    println!("first repeat frequency: {}", result);
+
+    Ok(())
+}
+
 fn calculate_frequency(input_filename: &String) -> Result<(), io::Error> {
     let input = read_file_input(input_filename)?;
-    let result = calculate(input);
+    let result = calculate(&input);
 
     println!("resulting frequency: {}", result);
 
     Ok(())
 }
 
-fn calculate(input: Vec<i32>) -> i32 {
+fn calculate(input: &Vec<i32>) -> i32 {
     let mut acc = 0;
 
     for num in input.iter() {
@@ -30,6 +50,24 @@ fn calculate(input: Vec<i32>) -> i32 {
     }
 
     acc
+}
+
+fn calculate_repeat(input: &Vec<i32>) -> i32 {
+    let mut current = 0;
+    let mut cache = std::collections::HashSet::new();
+
+    cache.insert(current);
+
+    loop {
+        for num in input.iter() {
+            current += num;
+            if cache.contains(&current) {
+                return current;
+            }
+
+            cache.insert(current);
+        }
+    }
 }
 
 fn read_file_input(filename: &String) -> Result<Vec<i32>, io::Error> {
