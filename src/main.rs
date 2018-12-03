@@ -1,7 +1,10 @@
 use std::env;
 
+mod util;
+
 mod day_01;
 mod day_02;
+mod day_03;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -23,6 +26,7 @@ fn run_day(day: &String, args: &[String]) {
         "1.2" => day_01::run_part_2(args),
         "2.1" => day_02::run_part_1(args),
         "2.2" => day_02::run_part_2(args),
+        "3.1" => day_03::run_part_1(args),
         _ => println!("Day not found: {}", day)
     };
 }

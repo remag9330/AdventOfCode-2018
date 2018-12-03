@@ -1,27 +1,13 @@
-use std::fs::File;
 use std::io;
-use std::io::prelude::*;
+
+use util;
 
 pub fn run_part_1(args: &[String]) {
-    match args {
-        [filename] => {
-            if let Err(e) = calculate_frequency(filename) {
-                println!("Day 1 Failed: {}", e);
-            }
-        },
-        _ => println!("Please supply a filename as an argument to day 1")
-    };
+    util::run_part_n("1", args, calculate_frequency);
 }
 
 pub fn run_part_2(args: &[String]) {
-    match args {
-        [filename] => {
-            if let Err(e) = calculate_repeat_frequency(filename) {
-                println!("Day 1 Failed: {}", e);
-            }
-        },
-        _ => println!("Please supply a filename as an argument to day 1")
-    };
+    util::run_part_n("1", args, calculate_repeat_frequency);
 }
 
 fn calculate_repeat_frequency(input_filename: &String) -> Result<(), io::Error> {
@@ -71,18 +57,10 @@ fn calculate_repeat(input: &Vec<i32>) -> i32 {
 }
 
 fn read_file_input(filename: &String) -> Result<Vec<i32>, io::Error> {
-    let input = read_file(filename)?;
+    let input = util::read_file_input(filename)?;
     let vec = parse_input(&input);
 
     Ok(vec)
-}
-
-fn read_file(filename: &String) -> Result<String, io::Error> {
-    let mut f = File::open(filename)?;
-    let mut input = String::new();
-    f.read_to_string(&mut input)?;
-
-    Ok(input)
 }
 
 fn parse_input(input: &String) -> Vec<i32> {

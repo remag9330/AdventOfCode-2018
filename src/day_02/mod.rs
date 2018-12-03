@@ -1,32 +1,18 @@
-use std::fs::File;
 use std::io;
-use std::io::prelude::*;
 use std::collections::HashMap;
 
+use util;
+
 pub fn run_part_1(args: &[String]) {
-    match args {
-        [filename] => {
-            if let Err(e) = calculate_checksum(filename) {
-                println!("Day 2 Failed: {}", e);
-            }
-        },
-        _ => println!("Please supply a filename as an argument to day 2")
-    };
+    util::run_part_n("2", args, calculate_checksum);
 }
 
 pub fn run_part_2(args: &[String]) {
-    match args {
-        [filename] => {
-            if let Err(e) = find_similar_characters(filename) {
-                println!("Day 2 Failed: {}", e);
-            }
-        },
-        _ => println!("Please supply a filename as an argument to day 2")
-    };
+    util::run_part_n("2", args, find_similar_characters);
 }
 
 fn calculate_checksum(filename: &String) -> Result<(), io::Error> {
-    let input = read_file_input(filename)?;
+    let input = util::read_file_input(filename)?;
     let result = calculate_checksums(&input);
 
     println!("The checksum is {}", result);
@@ -35,7 +21,7 @@ fn calculate_checksum(filename: &String) -> Result<(), io::Error> {
 }
 
 fn find_similar_characters(filename: &String) -> Result<(), io::Error> {
-    let input = read_file_input(filename)?;
+    let input = util::read_file_input(filename)?;
     let result = calculate_similar(&input);
 
     match result {
@@ -155,14 +141,6 @@ impl Iterator for LineComparerIterator {
             Some((self.lines[self.current_index].clone(), self.lines[self.compare_index].clone()))
         }
     }
-}
-
-fn read_file_input(filename: &String) -> Result<String, io::Error> {
-    let mut f = File::open(filename)?;
-    let mut contents = String::new();
-    f.read_to_string(&mut contents)?;
-
-    Ok(contents)
 }
 
 #[cfg(test)]
