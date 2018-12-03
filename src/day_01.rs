@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
-pub fn run(args: &[String]) {
+pub fn run_part_1(args: &[String]) {
     match args {
         [filename] => {
             if let Err(e) = calculate_frequency(filename) {
