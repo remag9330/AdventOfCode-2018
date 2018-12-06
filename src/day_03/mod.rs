@@ -8,6 +8,10 @@ pub fn run_part_1(args: &[String]) {
     util::run_part_n("3", args, find_overlaps);
 }
 
+pub fn run_part_2(args: &[String]) {
+    util::run_part_n("3", args, find_standalone);
+}
+
 fn find_overlaps(filename: &String) -> Result<(), io::Error> {
     let claims = read_claims(filename)?;
     let result = count_overlaps(&claims);
@@ -43,6 +47,28 @@ fn count_fabric_overused(state: &[InchState]) -> i32 {
     }
 
     total_overused
+}
+
+fn find_standalone(filename: &String) -> Result<(), io::Error> {
+    let claims = read_claims(filename)?;
+
+    for claim in claims.iter() {
+        if !overlaps_any(claim, claims.iter().filter(|c| c.id != claim.id)) {
+            println!("Standalone fabric id: {}", claim.id);
+        }
+    }
+
+    Ok(())
+}
+
+fn overlaps_any<'a>(claim: &Claim, rest: impl Iterator<Item = &'a Claim>) -> bool {
+    for compare in rest {
+        if claim.rect.overlaps(&compare.rect) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 fn read_claims(filename: &String) -> Result<Vec<Claim>, io::Error> {
@@ -117,6 +143,16 @@ impl Rectangle {
 
     fn iter(&self) -> RectPointIterator {
         RectPointIterator::new(self)
+    }
+
+    fn overlaps(&self, other: &Rectangle) -> bool {
+        let self_right = self.left + self.width;
+        let other_right = other.left + other.width;
+        let self_bottom = self.top + self.height;
+        let other_bottom = other.top + other.height;
+
+        self.left < other_right && self_right > other.left &&
+            self.top < other_bottom && self_bottom > other.top
     }
 }
 
