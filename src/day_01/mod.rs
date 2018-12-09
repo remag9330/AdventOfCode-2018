@@ -1,5 +1,3 @@
-use std::io;
-
 use util;
 
 pub fn run_part_1(args: &[String]) {
@@ -10,7 +8,7 @@ pub fn run_part_2(args: &[String]) {
     util::run_part_n("1", args, calculate_repeat_frequency);
 }
 
-fn calculate_repeat_frequency(input_filename: &String) -> Result<(), io::Error> {
+fn calculate_repeat_frequency(input_filename: &String) -> util::AppResult {
     let input = read_file_input(input_filename)?;
     let result = calculate_repeat(&input);
 
@@ -19,7 +17,7 @@ fn calculate_repeat_frequency(input_filename: &String) -> Result<(), io::Error> 
     Ok(())
 }
 
-fn calculate_frequency(input_filename: &String) -> Result<(), io::Error> {
+fn calculate_frequency(input_filename: &String) -> util::AppResult {
     let input = read_file_input(input_filename)?;
     let result = calculate(&input);
 
@@ -56,7 +54,7 @@ fn calculate_repeat(input: &Vec<i32>) -> i32 {
     }
 }
 
-fn read_file_input(filename: &String) -> Result<Vec<i32>, io::Error> {
+fn read_file_input(filename: &String) -> Result<Vec<i32>, util::AppError> {
     let input = util::read_file_input(filename)?;
     let vec = parse_input(&input);
 

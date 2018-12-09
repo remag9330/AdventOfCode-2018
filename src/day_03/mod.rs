@@ -1,5 +1,3 @@
-use std::io;
-
 use util;
 
 const FABRIC_SIZE: usize = 1000;
@@ -12,7 +10,7 @@ pub fn run_part_2(args: &[String]) {
     util::run_part_n("3", args, find_standalone);
 }
 
-fn find_overlaps(filename: &String) -> Result<(), io::Error> {
+fn find_overlaps(filename: &String) -> util::AppResult {
     let claims = read_claims(filename)?;
     let result = count_overlaps(&claims);
 
@@ -49,7 +47,7 @@ fn count_fabric_overused(state: &[InchState]) -> i32 {
     total_overused
 }
 
-fn find_standalone(filename: &String) -> Result<(), io::Error> {
+fn find_standalone(filename: &String) -> util::AppResult {
     let claims = read_claims(filename)?;
 
     for claim in claims.iter() {
@@ -71,7 +69,7 @@ fn overlaps_any<'a>(claim: &Claim, rest: impl Iterator<Item = &'a Claim>) -> boo
     return false;
 }
 
-fn read_claims(filename: &String) -> Result<Vec<Claim>, io::Error> {
+fn read_claims(filename: &String) -> Result<Vec<Claim>, util::AppError> {
     let contents = util::read_file_input(filename)?;
     let result = parse_claims(&contents);
     Ok(result)

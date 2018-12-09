@@ -1,4 +1,3 @@
-use std::io;
 use std::collections::HashMap;
 
 use util;
@@ -11,7 +10,7 @@ pub fn run_part_2(args: &[String]) {
     util::run_part_n("2", args, find_similar_characters);
 }
 
-fn calculate_checksum(filename: &String) -> Result<(), io::Error> {
+fn calculate_checksum(filename: &String) -> util::AppResult {
     let input = util::read_file_input(filename)?;
     let result = calculate_checksums(&input);
 
@@ -20,7 +19,7 @@ fn calculate_checksum(filename: &String) -> Result<(), io::Error> {
     Ok(())
 }
 
-fn find_similar_characters(filename: &String) -> Result<(), io::Error> {
+fn find_similar_characters(filename: &String) -> util::AppResult {
     let input = util::read_file_input(filename)?;
     let result = calculate_similar(&input);
 
