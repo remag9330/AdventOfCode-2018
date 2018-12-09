@@ -33,6 +33,7 @@ fn run_day(day: &String, args: &[String]) {
         "4.1" => day_04::run_part_1(args),
         // "4.2" => day_04::run_part_2(args),
         "5.1" => day_05::run_part_1(args),
+        "5.2" => day_05::run_part_2(args),
         _ => println!("Day not found: {}", day)
     };
 }
