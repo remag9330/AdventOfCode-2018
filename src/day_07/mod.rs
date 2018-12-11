@@ -4,6 +4,10 @@ pub fn run_part_1(args: &[String]) {
     util::run_part_n("1", args, determine_steps);
 }
 
+pub fn run_part_2(args: &[String]) {
+    util::run_part_n("2", args, calculate_time);
+}
+
 fn determine_steps(filename: &String) -> util::AppResult {
     let processes = read_steps(filename)?;
     let result = create_steps_list(&processes);
@@ -28,9 +32,89 @@ fn create_steps_list(steps: &Vec<Process>) -> String {
     result
 }
 
+fn calculate_time(filename: &String) -> util::AppResult {
+    let processes = read_steps(filename)?;
+    let available_workers = 5;
+    let base_action_time = 60;
+
+    let result = simulate_processes(&processes, available_workers, base_action_time);
+
+    println!("Time taken: {}", result);
+
+    Ok(())
+}
+
+fn simulate_processes(steps: &Vec<Process>, workers: i32, base_action_time: i32) -> i32 {
+    let mut current_time = 0;
+
+    let mut steps_done = Vec::new();
+    let mut available_actions = find_available_steps(steps, &steps_done);
+    let mut workers: Vec<(Option<char>, i32)> = vec![(None, 0); workers as usize];
+
+    for i in 0..std::cmp::min(available_actions.len(), workers.len()) {
+        workers[i].0 = Some(available_actions[i]);
+        workers[i].1 = get_process(available_actions[i], steps).unwrap().duration(base_action_time);
+    }
+
+    available_actions.clear();
+
+    while steps.len() != steps_done.len() {
+        // println!("current_time: {:?}", current_time);
+        // println!("steps_done: {:?}", steps_done);
+        // println!("available_actions: {:?}", available_actions);
+        // println!("workers: {:?}", workers);
+        // println!("");
+
+        for worker in workers.iter_mut() {
+            if let Some(c) = worker.0 {
+                worker.1 -= 1;
+
+                if worker.1 <= 0 {
+                    steps_done.push(c);
+                    worker.0 = None;
+                }
+            }
+        }
+
+        let doable = find_available_unstarted_steps(steps, &steps_done, &workers.iter().filter_map(|w| w.0).collect());
+        for maybe_new in &doable {
+            if !available_actions.contains(maybe_new) {
+                available_actions.push(maybe_new.clone());
+            }
+        }
+
+        for worker in workers.iter_mut() {
+            if worker.0.is_none() && available_actions.len() > 0 {
+                let next = determine_next_step_alphabetically(&available_actions);
+                let process = get_process(next, steps).unwrap();
+                let index = available_actions.iter().position(|x| *x == next).unwrap();
+                available_actions.remove(index);
+                worker.0 = Some(next);
+                worker.1 = process.duration(base_action_time);
+            }
+        }
+
+        current_time += 1;
+    }
+
+    current_time
+}
+
+fn get_process(id: char, processes: &Vec<Process>) -> Option<&Process> {
+    processes.iter().filter(|p| p.id == id).next()
+}
+
 fn find_available_steps(steps: &Vec<Process>, done: &Vec<char>) -> Vec<char> {
     steps.iter()
         .filter(|p| !done.contains(&p.id))
+        .filter(|p| dependencies_fulfilled(&p.dependencies, done))
+        .map(|p| p.id)
+        .collect::<Vec<char>>()
+}
+
+fn find_available_unstarted_steps(steps: &Vec<Process>, done: &Vec<char>, started: &Vec<char>) -> Vec<char> {
+    steps.iter()
+        .filter(|p| !done.contains(&p.id) && !started.contains(&p.id))
         .filter(|p| dependencies_fulfilled(&p.dependencies, done))
         .map(|p| p.id)
         .collect::<Vec<char>>()
@@ -104,6 +188,10 @@ impl Process {
     fn add_dependency(&mut self, new_dep: char) {
         self.dependencies.push(new_dep);
     }
+
+    fn duration(&self, base_action_time: i32) -> i32 {
+        base_action_time + (self.id as i32 - 'A' as i32) + 1
+    }
 }
 
 #[cfg(test)]
@@ -133,6 +221,15 @@ mod tests {
         let input = get_input();
         let result = create_steps_list(&input);
         assert_eq!("CABDFE", result);
+    }
+
+    #[test]
+    fn test_simulate_processes() {
+        let input = get_input();
+        let workers = 2;
+        let time = 0;
+
+        assert_eq!(15, simulate_processes(&input, workers, time));
     }
 
     fn get_process(processes: &Vec<Process>, id: char) -> Option<&Process> {
