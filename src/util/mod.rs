@@ -2,7 +2,9 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
+#[derive(Debug)]
 pub enum AppError {
+    AppError(String),
     IOError(io::Error),
 }
 
@@ -15,7 +17,8 @@ impl From<io::Error> for AppError {
 impl std::fmt::Display for AppError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            AppError::IOError(err) => err.fmt(f)
+            AppError::AppError(err) => err.fmt(f),
+            AppError::IOError(err) => err.fmt(f),
         }
     }
 }
