@@ -4,11 +4,24 @@ pub fn run_part_1(args: &[String]) {
     run_part_n("1", args, sum_metadata_entries);
 }
 
+pub fn run_part_2(args: &[String]) {
+    run_part_n("2", args, calculate_checksum);
+}
+
 fn sum_metadata_entries(filename: &String) -> AppResult {
     let tree = read_tree(filename)?;
 
     let result = tree.sum_metadata();
     println!("Sum of metadatas is {}", result);
+
+    Ok(())
+}
+
+fn calculate_checksum(filename: &String) -> AppResult {
+    let tree = read_tree(filename)?;
+
+    let result = tree.checksum();
+    println!("Tree checksum is {}", result);
 
     Ok(())
 }
@@ -65,9 +78,9 @@ impl Tree {
         }
     }
 
-    fn root_node(&self) -> Option<&Node> {
-        self.root_node.and_then(|index| self.nodes.get(index))
-    }
+    // fn root_node(&self) -> Option<&Node> {
+    //     self.root_node.and_then(|index| self.nodes.get(index))
+    // }
 
     fn add_node(&mut self, node: Node) -> usize {
         let new_index = self.nodes.len();
@@ -77,6 +90,30 @@ impl Tree {
 
     fn sum_metadata(&self) -> usize {
         self.nodes.iter().map(|n| n.metadata.iter().sum::<usize>()).sum::<usize>()
+    }
+
+    fn checksum(&self) -> usize {
+        match self.root_node {
+            Some(n) => self.node_checksum(n),
+            None => 0
+        }
+    }
+
+    fn node_checksum(&self, node_id: usize) -> usize {
+        let node = self.nodes.get(node_id).unwrap();
+        if node.children.len() == 0 {
+            node.metadata.iter().sum::<usize>()
+        } else {
+            let mut result = 0;
+
+            for index in node.metadata.iter() {
+                if let Some(child) = node.children.get(*index - 1) {
+                    result += self.node_checksum(*child);
+                }
+            }
+
+            result
+        }
     }
 }
 
@@ -102,6 +139,12 @@ mod tests {
     fn test_sum_metadata() {
         let tree = get_tree();
         assert_eq!(138, tree.sum_metadata());
+    }
+
+    #[test]
+    fn test_node_checksum() {
+        let tree = get_tree();
+        assert_eq!(66, tree.checksum());
     }
 
     fn get_tree() -> Tree {
