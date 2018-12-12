@@ -10,8 +10,8 @@ pub fn run_part_2(args: &[String]) {
 
 fn sum_metadata_entries(filename: &String) -> AppResult {
     let tree = read_tree(filename)?;
-
     let result = tree.sum_metadata();
+
     println!("Sum of metadatas is {}", result);
 
     Ok(())
@@ -19,8 +19,8 @@ fn sum_metadata_entries(filename: &String) -> AppResult {
 
 fn calculate_checksum(filename: &String) -> AppResult {
     let tree = read_tree(filename)?;
-
     let result = tree.checksum();
+
     println!("Tree checksum is {}", result);
 
     Ok(())
@@ -58,11 +58,13 @@ fn read_node(tree: &mut Tree, iter: &mut impl Iterator<Item=Result<usize, std::n
     Ok(tree.add_node(new_node))
 }
 
-fn read_usize_from(iter: &mut impl Iterator<Item=Result<usize, std::num::ParseIntError>>) -> Result<usize, AppError> {
-    let op = iter.next();
-    let item = op.ok_or(AppError::AppError(String::from("Invalid file input")))?;
-    let res = item.map_err(|_| AppError::AppError(String::from("Invalid file input")))?;
-    Ok(res)
+fn read_usize_from<T>(iter: &mut T) -> Result<usize, AppError> 
+        where T: Iterator<Item=Result<usize, std::num::ParseIntError>> {
+    match iter.next() {
+        Some(Ok(result)) => Ok(result),
+        None => Err(AppError::AppError(String::from("Unexpected EOF when parsing file"))),
+        Some(Err(err)) => Err(AppError::AppError(String::from(format!("Unable to convert string to number. {}", err)))),
+    }
 }
 
 struct Tree {
@@ -78,25 +80,21 @@ impl Tree {
         }
     }
 
-    // fn root_node(&self) -> Option<&Node> {
-    //     self.root_node.and_then(|index| self.nodes.get(index))
-    // }
-
     fn add_node(&mut self, node: Node) -> usize {
-        let new_index = self.nodes.len();
         self.nodes.push(node);
-        new_index
+        self.nodes.len() - 1
     }
 
     fn sum_metadata(&self) -> usize {
-        self.nodes.iter().map(|n| n.metadata.iter().sum::<usize>()).sum::<usize>()
+        self.nodes.iter()
+            .map(|n| n.metadata.iter().sum::<usize>())
+            .sum::<usize>()
     }
 
     fn checksum(&self) -> usize {
-        match self.root_node {
-            Some(n) => self.node_checksum(n),
-            None => 0
-        }
+        self.root_node
+            .map(|n| self.node_checksum(n))
+            .unwrap_or(0)
     }
 
     fn node_checksum(&self, node_id: usize) -> usize {

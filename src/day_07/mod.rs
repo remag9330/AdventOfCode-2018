@@ -76,7 +76,8 @@ fn simulate_processes(steps: &Vec<Process>, workers: i32, base_action_time: i32)
             }
         }
 
-        let doable = find_available_unstarted_steps(steps, &steps_done, &workers.iter().filter_map(|w| w.0).collect());
+        let in_progress = &workers.iter().filter_map(|w| w.0).collect();
+        let doable = find_available_unstarted_steps(steps, &steps_done, in_progress);
         for maybe_new in &doable {
             if !available_actions.contains(maybe_new) {
                 available_actions.push(maybe_new.clone());
@@ -105,29 +106,23 @@ fn get_process(id: char, processes: &Vec<Process>) -> Option<&Process> {
 }
 
 fn find_available_steps(steps: &Vec<Process>, done: &Vec<char>) -> Vec<char> {
-    steps.iter()
-        .filter(|p| !done.contains(&p.id))
-        .filter(|p| dependencies_fulfilled(&p.dependencies, done))
-        .map(|p| p.id)
-        .collect::<Vec<char>>()
+    find_available_unstarted_steps_internal(steps, done, None)
 }
 
 fn find_available_unstarted_steps(steps: &Vec<Process>, done: &Vec<char>, started: &Vec<char>) -> Vec<char> {
+    find_available_unstarted_steps_internal(steps, done, Some(started))
+}
+
+fn find_available_unstarted_steps_internal(steps: &Vec<Process>, done: &Vec<char>, started: Option<&Vec<char>>) -> Vec<char> {
     steps.iter()
-        .filter(|p| !done.contains(&p.id) && !started.contains(&p.id))
+        .filter(|p| !done.contains(&p.id) && !started.map(|s| s.contains(&p.id)).unwrap_or(true))
         .filter(|p| dependencies_fulfilled(&p.dependencies, done))
         .map(|p| p.id)
         .collect::<Vec<char>>()
 }
 
 fn dependencies_fulfilled(deps: &Vec<char>, done: &Vec<char>) -> bool {
-    for dep in deps.iter() {
-        if !done.contains(dep) {
-            return false;
-        }
-    }
-
-    true
+    deps.iter().filter(|d| !done.contains(d)).any(|_| true)
 }
 
 fn determine_next_step_alphabetically(options: &Vec<char>) -> char {
