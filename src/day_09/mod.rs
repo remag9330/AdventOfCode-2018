@@ -1,4 +1,8 @@
+use std::num::{NonZeroU32};
+
 use crate::util::*;
+
+use linked_list::{LinkedList, Cursor};
 
 pub fn run_part_1(args: &[String]) {
     run_part_n("1", args, calculate_winner);
@@ -28,32 +32,22 @@ fn calculate_bigger_winner(filename: &String) -> AppResult {
 
 fn simulate_game(player_count: usize, max_marble_score: usize) -> Vec<usize> {
     let mut player_score = vec!(0; player_count);
-    let mut marbles = vec!(0);
+    let mut marbles = LinkedList::new();
+    marbles.push_back(0);
+    let mut cursor = marbles.cursor();
 
-    let mut current_marble = 0;
     let mut current_player = 0;
  
     for marble_score in 1..=max_marble_score {
-        if marble_score % (max_marble_score / 100) == 0 {
-            println!("{}%", 100 * marble_score / max_marble_score);
-        }
-
         if marble_score % 23 == 0 {
-            let remove_index = counter_clockwise_index(&marbles, current_marble, 7);
-            *player_score.get_mut(current_player).unwrap() += marbles.remove(remove_index);
+            let remove_value = counter_clockwise_step_n(&mut cursor, NonZeroU32::new(7).unwrap());
+            *player_score.get_mut(current_player).unwrap() += *remove_value;
             *player_score.get_mut(current_player).unwrap() += marble_score;
-            current_marble = remove_index;
+            cursor.remove();
         } else {
-            let left_insert_index = clockwise_index(&marbles, current_marble, 1);
-            let right_insert_index = clockwise_index(&marbles, current_marble, 2);
+            clockwise_step_n(&mut cursor, NonZeroU32::new(2).unwrap());
+            cursor.insert(marble_score);
 
-            if left_insert_index == marbles.len() - 1 && right_insert_index == 0 {
-                marbles.push(marble_score);
-                current_marble = marbles.len() - 1;
-            } else {
-                marbles.insert(right_insert_index, marble_score);
-                current_marble = right_insert_index;
-            }
         }
 
         current_player = (current_player + 1) % player_count;
@@ -62,12 +56,37 @@ fn simulate_game(player_count: usize, max_marble_score: usize) -> Vec<usize> {
     player_score
 }
 
-fn clockwise_index(marbles: &Vec<usize>, current: usize, count: usize) -> usize {
-    (current + count) % marbles.len()
+fn clockwise_step_n<'a, T: 'a>(c: &'a mut Cursor<T>, num: NonZeroU32) -> &'a mut T {
+    for _ in 0..num.get() - 1 {
+        clockwise_step(c);
+    }
+
+    clockwise_step(c)
 }
 
-fn counter_clockwise_index(marbles: &Vec<usize>, current: usize, count: usize) -> usize {
-    (current + marbles.len() - count) % marbles.len()
+fn clockwise_step<'a, T: 'a>(c: &'a mut Cursor<T>) -> &'a mut T {
+    c.next();
+    if c.peek_next().is_none() {
+        c.next();
+    }
+
+    c.peek_next().unwrap()
+}
+
+fn counter_clockwise_step_n<'a, T: 'a>(c: &'a mut Cursor<T>, num: NonZeroU32) -> &'a mut T {
+    for _ in 0..num.get() - 1 {
+        counter_clockwise_step(c);
+    }
+
+    counter_clockwise_step(c)
+}
+
+fn counter_clockwise_step<'a, T: 'a>(c: &'a mut Cursor<T>) -> &'a mut T {
+    if c.prev().is_none() {
+        c.prev();
+    }
+
+    c.peek_next().unwrap()
 }
 
 fn read_input(filename: &String) -> AppResult<(usize, usize)> {
