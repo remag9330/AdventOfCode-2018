@@ -1,4 +1,4 @@
-use util;
+use crate::util;
 
 const FABRIC_SIZE: usize = 1000;
 

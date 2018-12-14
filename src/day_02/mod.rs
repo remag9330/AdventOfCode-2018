@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use util;
+use crate::util;
 
 pub fn run_part_1(args: &[String]) {
     util::run_part_n("2", args, calculate_checksum);

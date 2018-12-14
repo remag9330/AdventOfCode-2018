@@ -1,4 +1,4 @@
-use util;
+use crate::util;
 
 pub fn run_part_1(args: &[String]) {
     util::run_part_n("1", args, find_most_asleep_guard);
