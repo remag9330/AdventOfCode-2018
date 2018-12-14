@@ -5,12 +5,21 @@ pub fn run_part_1(args: &[String]) {
 }
 
 pub fn run_part_2(args: &[String]) {
-    run_part_n("2", args, |_| Ok(()));
+    run_part_n("2", args, calculate_bigger_winner);
 }
 
 fn calculate_winner(filename: &String) -> AppResult {
     let (player_count, max_marble_score) = read_input(filename)?;
     let results = simulate_game(player_count, max_marble_score);
+    
+    println!("Highest score: {}", results.iter().max().unwrap_or(&0));
+
+    Ok(())
+}
+
+fn calculate_bigger_winner(filename: &String) -> AppResult {
+    let (player_count, max_marble_score) = read_input(filename)?;
+    let results = simulate_game(player_count, max_marble_score * 100);
     
     println!("Highest score: {}", results.iter().max().unwrap_or(&0));
 
@@ -25,6 +34,10 @@ fn simulate_game(player_count: usize, max_marble_score: usize) -> Vec<usize> {
     let mut current_player = 0;
  
     for marble_score in 1..=max_marble_score {
+        if marble_score % (max_marble_score / 100) == 0 {
+            println!("{}%", 100 * marble_score / max_marble_score);
+        }
+
         if marble_score % 23 == 0 {
             let remove_index = counter_clockwise_index(&marbles, current_marble, 7);
             *player_score.get_mut(current_player).unwrap() += marbles.remove(remove_index);

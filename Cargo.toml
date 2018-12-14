@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Brad <brad.crouch9330@gmail.com>"]
 
 [dependencies]
+linked-list = "0.0.3"
